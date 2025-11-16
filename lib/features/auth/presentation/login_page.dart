@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/social_button.dart';
-import '../widgets/auth_card_container.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,82 +12,195 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _email = TextEditingController();
   final _pass = TextEditingController();
+  bool _obscure = true;
 
-  // STUB: implement authentication logic later
   Future<void> _onLoginPressed() async {
-    // TODO: call AuthController.login(...)
-    // For now, simulate success by navigating to profile
     Navigator.pushReplacementNamed(context, '/profile');
   }
 
-  void _onGooglePressed() {
-    // TODO: implement google sign-in
-    // empty for now
-  }
+  void _onGooglePressed() {}
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Scaffold(
       body: Container(
         height: double.infinity,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [theme.scaffoldBackgroundColor,theme.primaryColor.withOpacity(0.2)],stops: [0.75, 1.0], begin: Alignment.topCenter, end: Alignment.bottomRight),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0A0A0F),
+              Color(0xFF1A0A2E),
+            ],
+          ),
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 34),
+            padding: const EdgeInsets.all(24),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                IconButton(onPressed: () => Navigator.pop(context), icon: Icon(Icons.arrow_back_ios_new, color:theme.iconTheme.color)),
-                const SizedBox(height: 8),
-                Text('Welcome back', style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.w600,color: Colors.white)),
-                const SizedBox(height: 6),
-                Text('Sign in to continue', style: GoogleFonts.poppins(color: Colors.white)),
-                const SizedBox(height: 18),
-                AuthCardContainer(
-                  child: Column(
-                    children: [
-                      AuthTextField(controller: _email, hint: 'Email', keyboardType: TextInputType.emailAddress),
-                      const SizedBox(height: 8),
-                      AuthTextField(controller: _pass, hint: 'Password', obscureText: true),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _onLoginPressed,
+                const SizedBox(height: 40),
 
-                          child: Text('Login', style: GoogleFonts.poppins(fontSize: 16)),
+                // Logo
+                Center(
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0xFF8B5CF6).withOpacity(0.3),
+                          blurRadius: 20,
                         ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      size: 50,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 40),
+
+                // Title
+                Text(
+                  "Welcome Back",
+                  style: theme.textTheme.displayLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Sign in to continue",
+                  style: theme.textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 40),
+
+                // Email
+                AuthTextField(
+                  controller: _email,
+                  hint: "Email address",
+                  icon: Icons.email_outlined,
+                ),
+                const SizedBox(height: 16),
+
+                // Password
+                AuthTextField(
+                  controller: _pass,
+                  hint: "Password",
+                  obscureText: _obscure,
+                  icon: Icons.lock_outline,
+                  suffix: IconButton(
+                    icon: Icon(
+                      _obscure
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      color: theme.textTheme.bodySmall!.color,
+                    ),
+                    onPressed: () => setState(() => _obscure = !_obscure),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Forgot password
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.pushNamed(context, "/forgot"),
+                    child: Text(
+                      "Forgot?",
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const SizedBox(height: 12),
-                      TextButton(onPressed: () => Navigator.pushNamed(context, '/forgot'), child: const Text('Forgot password?')),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(child: Divider(color: Colors.white12)),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Text('Or', style: GoogleFonts.poppins(color: Colors.white70)),
-                          ),
-                          Expanded(child: Divider(color: Colors.white12)),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      SocialButton(
-                        label: 'Continue with Google',
-                        assetUrl: 'assets/logos/google_logo.png',
-                        onTap: _onGooglePressed,
-                      ),
-                      const SizedBox(height: 12),
-                      TextButton(
-                        onPressed: () => Navigator.pushNamed(context, '/register'),
-                        child: Text("Don't have an account? Register", style: GoogleFonts.poppins(color: Colors.white)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Login Button
+                Container(
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+                    ),
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0xFF8B5CF6).withOpacity(0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
                       ),
                     ],
                   ),
+                  child: ElevatedButton(
+                    onPressed: _onLoginPressed,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                    ),
+                    child: const Text("Sign In"),
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Divider
+                Row(
+                  children: [
+                    const Expanded(
+                        child: Divider(color: Color(0xFF6B6B80))),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        "OR",
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ),
+                    const Expanded(
+                        child: Divider(color: Color(0xFF6B6B80))),
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                // Social login
+                SocialButton(
+                  label: "Continue with Google",
+                  icon: Icons.g_mobiledata,
+                  onTap: _onGooglePressed,
+                ),
+                const SizedBox(height: 24),
+
+                // Sign up
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Don't have an account? ",
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pushNamed(context, "/register"),
+                      child: Text(
+                        "Sign Up",
+                        style: TextStyle(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

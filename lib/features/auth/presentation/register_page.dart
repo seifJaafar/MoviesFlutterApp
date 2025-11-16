@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../widgets/auth_text_field.dart';
-import '../widgets/auth_card_container.dart';
+import '../widgets/social_button.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -11,64 +10,186 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final _name = TextEditingController();
-  final _email = TextEditingController();
-  final _pass = TextEditingController();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
-  // STUB: implement registration logic later
   Future<void> _onRegisterPressed() async {
-    // TODO: call AuthController.register(...)
-    // For now simulate success
     Navigator.pushReplacementNamed(context, '/profile');
   }
+
+  void _onGooglePressed() {}
+  void _onFacebookPressed() {}
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Scaffold(
       body: Container(
         height: double.infinity,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [theme.scaffoldBackgroundColor,theme.primaryColor.withOpacity(0.2)],stops: [0.75, 1.0], begin: Alignment.topCenter, end: Alignment.bottomRight),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF0A0A0F), Color(0xFF1A0A2E)],
+          ),
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 34),
+            padding: const EdgeInsets.all(24),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white70)),
-                const SizedBox(height: 8),
-                Text('Create account', style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.w600,color: Colors.white)),
-                const SizedBox(height: 6),
-                Text('Let\'s set up your account', style: GoogleFonts.poppins(color: Colors.white)),
-                const SizedBox(height: 18),
-                AuthCardContainer(
-                  child: Column(
-                    children: [
-                      AuthTextField(controller: _name, hint: 'Full name'),
-                      const SizedBox(height: 8),
-                      AuthTextField(controller: _email, hint: 'Email', keyboardType: TextInputType.emailAddress),
-                      const SizedBox(height: 8),
-                      AuthTextField(controller: _pass, hint: 'Password', obscureText: true),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _onRegisterPressed,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF7C4DFF),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: Text('Create account', style: GoogleFonts.poppins(fontSize: 16)),
-                        ),
+                const SizedBox(height: 40),
+
+                // Logo
+                Center(
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
                       ),
-                      const SizedBox(height: 12),
-                      TextButton(onPressed: () => Navigator.pushNamed(context, '/login'), child: const Text('Already have an account? Login')),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0xFF8B5CF6).withOpacity(0.3),
+                          blurRadius: 20,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      size: 50,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+
+                // Title
+                Text(
+                  "Create Account",
+                  style: theme.textTheme.displayLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Sign up to get started",
+                  style: theme.textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 40),
+
+                // Full Name
+                AuthTextField(
+                  controller: _nameController,
+                  hint: "Full Name",
+                  icon: Icons.person_outline,
+                ),
+                const SizedBox(height: 16),
+
+                // Email
+                AuthTextField(
+                  controller: _emailController,
+                  hint: "Email address",
+                  icon: Icons.email_outlined,
+                ),
+                const SizedBox(height: 16),
+
+                // Password
+                AuthTextField(
+                  controller: _passwordController,
+                  hint: "Password",
+                  icon: Icons.lock_outline,
+                  obscureText: _obscurePassword,
+                  suffix: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      color: theme.textTheme.bodySmall!.color,
+                    ),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Register Button
+                Container(
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+                    ),
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0xFF8B5CF6).withOpacity(0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
                     ],
                   ),
+                  child: ElevatedButton(
+                    onPressed: _onRegisterPressed,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                    ),
+                    child: const Text("Sign Up"),
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Divider
+                Row(
+                  children: [
+                    const Expanded(child: Divider(color: Color(0xFF6B6B80))),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        "OR",
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ),
+                    const Expanded(child: Divider(color: Color(0xFF6B6B80))),
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                // Social login
+                SocialButton(
+                  label: "Continue with Google",
+                  icon: Icons.g_mobiledata,
+                  onTap: _onGooglePressed,
+                ),
+
+                const SizedBox(height: 24),
+
+                // Sign In Link
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Already have an account? ",
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pushNamed(context, "/login"),
+                      child: Text(
+                        "Sign In",
+                        style: TextStyle(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
