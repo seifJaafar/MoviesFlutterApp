@@ -1,28 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/social_button.dart';
+import '../controllers/auth_controller.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _email = TextEditingController();
   final _pass = TextEditingController();
   bool _obscure = true;
 
   Future<void> _onLoginPressed() async {
-    Navigator.pushReplacementNamed(context, '/profile');
+    final notifier = ref.read(authControllerProvider.notifier);
+    await notifier.login(_email.text.trim(), _pass.text.trim());
+
+    final authState = ref.read(authControllerProvider);
+    if (authState.error != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(authState.error!)));
+    } else if (authState.user != null) {
+      Navigator.pushReplacementNamed(context, '/profile');
+    }
   }
 
-  void _onGooglePressed() {}
+  Future<void> _onGooglePressed() async {
+    final notifier = ref.read(authControllerProvider.notifier);
+    await notifier.loginWithGoogle();
+
+    final authState = ref.read(authControllerProvider);
+    if (authState.error != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(authState.error!)));
+    } else if (authState.user != null) {
+      Navigator.pushReplacementNamed(context, '/profile');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final auth = ref.watch(authControllerProvider);
 
     return Scaffold(
       body: Container(
@@ -57,7 +80,8 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Color(0xFF8B5CF6).withOpacity(0.3),
+                          // replaced withOpacity(0.3) by equivalent ARGB
+                          color: Color(0x4D8B5CF6),
                           blurRadius: 20,
                         ),
                       ],
@@ -102,9 +126,7 @@ class _LoginPageState extends State<LoginPage> {
                   icon: Icons.lock_outline,
                   suffix: IconButton(
                     icon: Icon(
-                      _obscure
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
+                      _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
                       color: theme.textTheme.bodySmall!.color,
                     ),
                     onPressed: () => setState(() => _obscure = !_obscure),
@@ -139,19 +161,21 @@ class _LoginPageState extends State<LoginPage> {
                     borderRadius: BorderRadius.circular(28),
                     boxShadow: [
                       BoxShadow(
-                        color: Color(0xFF8B5CF6).withOpacity(0.3),
+                        color: Color(0x4D8B5CF6),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
                     ],
                   ),
                   child: ElevatedButton(
-                    onPressed: _onLoginPressed,
+                    onPressed: auth.loading ? null : _onLoginPressed,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                     ),
-                    child: const Text("Sign In"),
+                    child: auth.loading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text("Sign In"),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -159,8 +183,7 @@ class _LoginPageState extends State<LoginPage> {
                 // Divider
                 Row(
                   children: [
-                    const Expanded(
-                        child: Divider(color: Color(0xFF6B6B80))),
+                    const Expanded(child: Divider(color: Color(0xFF6B6B80))),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
@@ -168,8 +191,7 @@ class _LoginPageState extends State<LoginPage> {
                         style: theme.textTheme.bodySmall,
                       ),
                     ),
-                    const Expanded(
-                        child: Divider(color: Color(0xFF6B6B80))),
+                    const Expanded(child: Divider(color: Color(0xFF6B6B80))),
                   ],
                 ),
                 const SizedBox(height: 32),
@@ -178,7 +200,7 @@ class _LoginPageState extends State<LoginPage> {
                 SocialButton(
                   label: "Continue with Google",
                   icon: Icons.g_mobiledata,
-                  onTap: _onGooglePressed,
+                  onTap: auth.loading ? null : () => _onGooglePressed(),
                 ),
                 const SizedBox(height: 24),
 

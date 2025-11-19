@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class SocialButton extends StatelessWidget {
   final String label;
   final IconData icon;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const SocialButton({
     super.key,

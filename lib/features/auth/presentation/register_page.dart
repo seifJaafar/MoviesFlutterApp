@@ -1,30 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/social_button.dart';
+import '../controllers/auth_controller.dart';
 
-class RegisterPage extends StatefulWidget {
+class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  ConsumerState<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
+  /// Email/password registration
   Future<void> _onRegisterPressed() async {
-    Navigator.pushReplacementNamed(context, '/profile');
+    final notifier = ref.read(authControllerProvider.notifier);
+    await notifier.register(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+      _nameController.text.trim(),
+    );
+
+    final authState = ref.read(authControllerProvider);
+    if (authState.error != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(authState.error!)));
+    } else if (authState.user != null) {
+      Navigator.pushReplacementNamed(context, '/profile');
+    }
   }
 
-  void _onGooglePressed() {}
-  void _onFacebookPressed() {}
+  /// Google Sign In
+  Future<void> _onGooglePressed() async {
+    final notifier = ref.read(authControllerProvider.notifier);
+    await notifier.loginWithGoogle();
+
+    final authState = ref.read(authControllerProvider);
+    if (authState.error != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(authState.error!)));
+    } else if (authState.user != null) {
+      Navigator.pushReplacementNamed(context, '/profile');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final auth = ref.watch(authControllerProvider); // AuthState
 
     return Scaffold(
       body: Container(
@@ -43,7 +71,6 @@ class _RegisterPageState extends State<RegisterPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 40),
-
                 // Logo
                 Center(
                   child: Container(
@@ -56,7 +83,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Color(0xFF8B5CF6).withOpacity(0.3),
+                          color: Color(0x4D8B5CF6),
                           blurRadius: 20,
                         ),
                       ],
@@ -129,19 +156,21 @@ class _RegisterPageState extends State<RegisterPage> {
                     borderRadius: BorderRadius.circular(28),
                     boxShadow: [
                       BoxShadow(
-                        color: Color(0xFF8B5CF6).withOpacity(0.3),
+                        color: Color(0x4D8B5CF6),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
                     ],
                   ),
                   child: ElevatedButton(
-                    onPressed: _onRegisterPressed,
+                    onPressed: auth.loading ? null : _onRegisterPressed,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                     ),
-                    child: const Text("Sign Up"),
+                    child: auth.loading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text("Sign Up"),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -166,7 +195,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 SocialButton(
                   label: "Continue with Google",
                   icon: Icons.g_mobiledata,
-                  onTap: _onGooglePressed,
+                  onTap: auth.loading ? null : () => _onGooglePressed(),
                 ),
 
                 const SizedBox(height: 24),
