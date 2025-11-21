@@ -1,26 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/auth_text_field.dart';
-import '../widgets/social_button.dart';
+import '../controllers/auth_controller.dart';
 
-class ForgotPasswordPage extends StatefulWidget {
+class ForgotPasswordPage extends ConsumerStatefulWidget {
   const ForgotPasswordPage({super.key});
 
   @override
-  State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
+  ConsumerState<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
 }
 
-class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
+class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   final _emailController = TextEditingController();
   bool _sent = false;
 
   Future<void> _onSendResetPressed() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a valid email")),
+      );
+      return;
+    }
+
+    final notifier = ref.read(authControllerProvider.notifier);
+
+    await notifier.sendResetEmail(email);
+
+    final state = ref.read(authControllerProvider);
+
+    if (state.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(state.error!)),
+      );
+      return;
+    }
+
     setState(() => _sent = true);
-    // TODO: Implement sending password reset email
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Reset email sent! Check your inbox.")),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final auth = ref.watch(authControllerProvider); // To track loading state
 
     return Scaffold(
       body: Container(
@@ -105,12 +131,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     ],
                   ),
                   child: ElevatedButton(
-                    onPressed: _onSendResetPressed,
+                    onPressed: auth.loading ? null : _onSendResetPressed,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                     ),
-                    child: Text(_sent ? "Link Sent" : "Send Reset Link"),
+                    child: auth.loading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Text(_sent ? "Link Sent" : "Send Reset Link"),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -124,7 +152,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       style: theme.textTheme.bodyMedium,
                     ),
                     TextButton(
-                      onPressed: () => Navigator.pushReplacementNamed(context, "/login"),
+                      onPressed: () =>
+                          Navigator.pushReplacementNamed(context, "/login"),
                       child: Text(
                         "Sign In",
                         style: TextStyle(

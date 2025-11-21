@@ -95,7 +95,10 @@ class AuthRepositoryImpl implements AuthRepository {
       return null;
     }
   }
-
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
+  }
 
   @override
   Future<void> logout() async {

@@ -26,7 +26,22 @@ class AuthNotifier extends Notifier<AuthState> {
   AuthState build() {
     return const AuthState();
   }
+  Future<void> sendResetEmail(String email) async {
+    try {
+      state = state.copyWith(loading: true, error: null);
 
+      await _repo.sendPasswordResetEmail(email);
+
+      state = state.copyWith(
+        loading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        loading: false,
+        error: e.toString(),
+      );
+    }
+  }
   Future<void> register(String email, String password, String name) async {
     state = state.copyWith(loading: true, error: null);
     try {
